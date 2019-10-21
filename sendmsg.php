@@ -8,4 +8,8 @@ $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => $channelSecret]);
 $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('hello world');
 $response = $bot->pushMessage($idPush, $textMessageBuilder);
 
-echo $response->getHTTPStatus() . ' ' . $response->getRawBody();
+$LineID = $_GET["lineid"];
+$Message = $_GET["message"];
+
+echo $response->getHTTPStatus() . ' ' . $response->getRawBody() . ' : ' .$LineID . ' : ' . $Message;
+
