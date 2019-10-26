@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" >
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Sending Message to line</title>
+</head>
+<body>
+	<form id="MainForm" name="MainForm" method="post" action="sendmsg.php">
+	<table cellpadding="0" cellspacing="2" border="0" width="100%">
+	<tbody>
+		<tr><td>
+			<label>Access Token :</label>
+			<input id="AccessToken" name="AccessToken" type="text" maxlength="200" style="width:700px;" value="oqwqIM9MVlZg/Df6fJ2r9kYAXTLRcStAPltdM6oXo0D7YYkIn6Mf/Omn1OIcmlelvrai3OvTCnnlbwDLc0OnCQubmcvPEbFrXvILkmGFc8c2+1XHqLwc3ysScRJGLXRTo18Wq6hrBN8MIeQpbi3ERwdB04t89/1O/w1cDnyilFU=" />
+		</td></tr>
+		<tr><td>
+			<label>Channel Secret :</label>
+			<input id="ChannelSecret" name="ChannelSecret" type="text" maxlength="100" style="width:300px;" value="ac5b35088b8ce7153d9649559e5b3eb3" />
+		</td></tr>
+		<tr><td>
+			<label>Line ID :</label>
+			<input id="LineID" name="LineID" type="text" maxlength="100" style="width:300px;" value="Ude928b040ac88f570c6b964ee22c6d99" />
+		</td></tr>
+		<tr><td>
+			<label>Message Type :</label>
+			<select id="MessageType" name="MessageType" style="width:100px;">
+				<option value="text" selected>text</option>
+				<option value="image">image</option>
+				<option value="video">video</option>
+				<option value="audio">audio</opion>
+				<option value="location">location</option>
+				<option value="flex">flex</option>
+			</select>
+			<label>Message Title :</label>
+			<input id="altText" name="altText" type="text" maxlength="100" style="width:300px;" placeholder="Flex Subject" />
+		</td></tr>
+		<tr><td>
+			<label>Message :</label>
+			<textarea id="Message" name="Message" rows="20" cols="100"></textarea>
+		</td></tr>
+		<tr><td>
+			<label></label>
+			<input type="button" id="Save" name="Save" value="Send Request" onclick="checkform();" />
+		</td></tr>
+	</tbody>
+	</table>
+	</form>
+	<style type="text/css">
+		label {
+			padding-left: 10px;
+			display: inline-block;
+			width: 17%;
+			font-weight: bold;
+			vertical-align: top;
+		}
+	</style>
+	<script type="text/javascript">
+		function checkform() {
+			if (document.getElementById("MessageType").value == "flex" && document.getElementById("altText").value == "") {
+				alert("please enter Message Title");
+				return false;
+			}
+			if (document.getElementById("Message").value == "") {
+				alert("please enter Message");
+				return false;
+			}
+			document.MainForm.submit();
+		}
+	</script>
+</body>
+</html>
+
+
+
+
+
+
+
