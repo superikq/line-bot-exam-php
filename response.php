@@ -1,157 +1,87 @@
-<?php 
-	define('UPLOAD_DIR', 'tmp_image/');
-	/*Get Data From POST Http Request*/
-	$datas = file_get_contents('php://input');
-	/*Decode Json From LINE Data Body*/
-	$deCode = json_decode($datas,true);
-
-	file_put_contents('log.txt', file_get_contents('php://input') . PHP_EOL, FILE_APPEND);
-
-// -- เก็บ รูป ที่ส่งมา
-  	$LINEDatas['token'] = "oqwqIM9MVlZg/Df6fJ2r9kYAXTLRcStAPltdM6oXo0D7YYkIn6Mf/Omn1OIcmlelvrai3OvTCnnlbwDLc0OnCQubmcvPEbFrXvILkmGFc8c2+1XHqLwc3ysScRJGLXRTo18Wq6hrBN8MIeQpbi3ERwdB04t89/1O/w1cDnyilFU=";
-	$messageType = $deCode['events'][0]['message']['type'];
-	if($messageType == 'image'){
-		$LINEDatas['messageId'] = $deCode['events'][0]['message']['id'];
-		$results = getContent($LINEDatas);
-		if($results['result'] == 'S'){
-		$file = UPLOAD_DIR . uniqid() . '.png';
-		$success = file_put_contents($file, $results['response']);
-		}
-	}
+<?php
+// Get Data From POST Http Request
+$datas = file_get_contents('php://input');
+$deCode = json_decode($datas,true);
+file_put_contents('https://agile-forest-07480.herokuapp.com/log.txt', file_get_contents('php://input') . PHP_EOL, FILE_APPEND);
 	
-// -- เก็บ User Profile & Log
-	$replyToken = $deCode['events'][0]['replyToken'];
-	$userId = $deCode['events'][0]['source']['userId'];
+$type = $deCode['events'][0]['type'];
+$replyToken = $deCode['events'][0]['replyToken'];
+$userId = $deCode['events'][0]['source']['userId'];
 
-	$LINEDatas['url'] = "https://api.line.me/v2/bot/profile/".$userId;
-  	$LINEDatas['token'] = "oqwqIM9MVlZg/Df6fJ2r9kYAXTLRcStAPltdM6oXo0D7YYkIn6Mf/Omn1OIcmlelvrai3OvTCnnlbwDLc0OnCQubmcvPEbFrXvILkmGFc8c2+1XHqLwc3ysScRJGLXRTo18Wq6hrBN8MIeQpbi3ERwdB04t89/1O/w1cDnyilFU=";
-	$results = getLINEProfile($LINEDatas);
-	file_put_contents('log-profile.txt', $results['message'] . PHP_EOL, FILE_APPEND);	
-	$deProfile = json_decode($results['message'],true);
-	$displayName = $deProfile['displayName'];
+// Get user profile
+$url = "https://api.line.me/v2/bot/profile/".$userId;
+$AccessToken = "oqwqIM9MVlZg/Df6fJ2r9kYAXTLRcStAPltdM6oXo0D7YYkIn6Mf/Omn1OIcmlelvrai3OvTCnnlbwDLc0OnCQubmcvPEbFrXvILkmGFc8c2+1XHqLwc3ysScRJGLXRTo18Wq6hrBN8MIeQpbi3ERwdB04t89/1O/w1cDnyilFU=";
+$results = getLINEProfile($url, $AccessToken);
+file_put_contents('https://agile-forest-07480.herokuapp.com/log-profile.txt', $results['message'] . PHP_EOL, FILE_APPEND);	
+$deProfile = json_decode($results['message'],true);
+$displayName = $deProfile['displayName'];
 
-// --- ตอบกลับ	
-	$messages = [];
-	$messages['replyToken'] = $replyToken;
-	$messages['messages'][0] = getFormatTextMessage("ยินดีต้อนรับสู่ระบบ Auto FCP reports คุณ " . $displayName);
-	$encodeJson = json_encode($messages);
-	$LINEDatas['url'] = "https://api.line.me/v2/bot/message/reply";
-  	$LINEDatas['token'] = "oqwqIM9MVlZg/Df6fJ2r9kYAXTLRcStAPltdM6oXo0D7YYkIn6Mf/Omn1OIcmlelvrai3OvTCnnlbwDLc0OnCQubmcvPEbFrXvILkmGFc8c2+1XHqLwc3ysScRJGLXRTo18Wq6hrBN8MIeQpbi3ERwdB04t89/1O/w1cDnyilFU=";
-  	$results = sentMessage($encodeJson,$LINEDatas);
-	
-	/*Return HTTP Request 200*/
-	http_response_code(200);
+$url = "https://api.line.me/v2/bot/message/reply";
+$AccessToken = "oqwqIM9MVlZg/Df6fJ2r9kYAXTLRcStAPltdM6oXo0D7YYkIn6Mf/Omn1OIcmlelvrai3OvTCnnlbwDLc0OnCQubmcvPEbFrXvILkmGFc8c2+1XHqLwc3ysScRJGLXRTo18Wq6hrBN8MIeQpbi3ERwdB04t89/1O/w1cDnyilFU=";
+switch ($type) {
+case "join":
+	$Message = '{ "type": "text", "text": "สวัสดีครับทุกคน"}';
+	$results = sendLineMessage($url, $AccessToken, $replyToken, $Message);
+	echo "Result: " . $result . "\r\n";
+	break;
+case "message":
+	$Message = '{ "type": "text", "text": "ขอบคุณครับ คุณ  ' . $displayName . '\n( ' . $userId . ' )"}';
+	$results = sendLineMessage($url, $AccessToken, $replyToken, $Message);
+	echo "Result: " . $result . "\r\n";
+	break;
+case "leave":
+	break;
+}
 
-	function getFormatTextMessage($text)
-	{
-		$datas = [];
-		$datas['type'] = 'text';
-		$datas['text'] = $text;
-		return $datas;
-	}
+function sendLineMessage ($url, $AccessToken, $replyToken, $Message)
+{
+	$post_header = array('Content-Type: application/json', 'Authorization: Bearer ' . $AccessToken);
+	$post_body = '{ "replyToken": "' . $replyToken . '", "messages": [' . $Message . ']}';
 
-	function sentMessage($encodeJson,$datas)
-	{
-		$datasReturn = [];
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => $datas['url'],
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => "",
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 30,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => "POST",
-			CURLOPT_POSTFIELDS => $encodeJson,
-			CURLOPT_HTTPHEADER => array(
-				"authorization: Bearer ".$datas['token'],
-				"cache-control: no-cache",
-				"content-type: application/json; charset=UTF-8",
-			),
-		));
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
-		curl_close($curl);
-		if ($err) {
-		    $datasReturn['result'] = 'E';
-		    $datasReturn['message'] = $err;
-		} else {
-		    if($response == "{}"){
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $post_header);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $post_body);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	$response = curl_exec($ch);
+	curl_close($ch);
+	return $response;
+}
+
+function getLINEProfile ($url, $AccessToken)
+{
+	$datasReturn = [];
+	$curl = curl_init();
+	curl_setopt_array($curl, array(
+		CURLOPT_URL => $url,
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_ENCODING => "",
+		CURLOPT_MAXREDIRS => 10,
+		CURLOPT_TIMEOUT => 30,
+		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		CURLOPT_CUSTOMREQUEST => "GET",
+		CURLOPT_HTTPHEADER => array(
+			"Authorization: Bearer ".$AccessToken,
+			"cache-control: no-cache"
+		),
+	));
+	$response = curl_exec($curl);
+	$err = curl_error($curl);
+	curl_close($curl);
+	if($err){
+		$datasReturn['result'] = 'E';
+		$datasReturn['message'] = $err;
+	}else{
+		if($response == "{}"){
 			$datasReturn['result'] = 'S';
 			$datasReturn['message'] = 'Success';
-		    }else{
+		}else{
 			$datasReturn['result'] = 'E';
 			$datasReturn['message'] = $response;
-		    }
 		}
-		return $datasReturn;
 	}
+	return $datasReturn;
+}	
 
-	function getLINEProfile($datas)
-	{
-		$datasReturn = [];
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => $datas['url'],
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => "",
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 30,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => "GET",
-			CURLOPT_HTTPHEADER => array(
-				"Authorization: Bearer ".$datas['token'],
-				"cache-control: no-cache"
-			),
-		));
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
-		curl_close($curl);
-		if($err){
-			$datasReturn['result'] = 'E';
-			$datasReturn['message'] = $err;
-		}else{
-			if($response == "{}"){
-				$datasReturn['result'] = 'S';
-				$datasReturn['message'] = 'Success';
-			}else{
-				$datasReturn['result'] = 'E';
-				$datasReturn['message'] = $response;
-			}
-		}
-		return $datasReturn;
-	}	
-
-	function getContent($datas)
-	{
-		$datasReturn = [];
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => "https://api.line.me/v2/bot/message/".$datas['messageId']."/content",
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => "",
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 30,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => "GET",
-			CURLOPT_POSTFIELDS => "",
-			CURLOPT_HTTPHEADER => array(
-				"Authorization: Bearer ".$datas['token'],
-				"cache-control: no-cache"
-			),
-		));
-		$response = curl_exec($curl);
-		$err = curl_error($curl);
-		curl_close($curl);
-		if($err){
-			$datasReturn['result'] = 'E';
-			$datasReturn['message'] = $err;
-		}else{
-			$datasReturn['result'] = 'S';
-			$datasReturn['message'] = 'Success';
-			$datasReturn['response'] = $response;
-		}
-		return $datasReturn;
-	}
-	
 ?>
