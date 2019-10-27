@@ -2,7 +2,7 @@
 // Get Data From POST Http Request
 $datas = file_get_contents('php://input');
 $deCode = json_decode($datas,true);
-file_put_contents('https://github.com/superikq/line-bot-exam-php/blob/master/log.txt', file_get_contents('php://input') . PHP_EOL, FILE_APPEND);
+file_put_contents('log.txt', file_get_contents('php://input') . PHP_EOL, FILE_APPEND);
 	
 $type = $deCode['events'][0]['type'];
 $replyToken = $deCode['events'][0]['replyToken'];
@@ -12,7 +12,7 @@ $userId = $deCode['events'][0]['source']['userId'];
 $url = "https://api.line.me/v2/bot/profile/".$userId;
 $AccessToken = "oqwqIM9MVlZg/Df6fJ2r9kYAXTLRcStAPltdM6oXo0D7YYkIn6Mf/Omn1OIcmlelvrai3OvTCnnlbwDLc0OnCQubmcvPEbFrXvILkmGFc8c2+1XHqLwc3ysScRJGLXRTo18Wq6hrBN8MIeQpbi3ERwdB04t89/1O/w1cDnyilFU=";
 $results = getLINEProfile($url, $AccessToken);
-file_put_contents('https://github.com/superikq/line-bot-exam-php/blob/master/log-profile.txt', $results['message'] . PHP_EOL, FILE_APPEND);	
+file_put_contents('log-profile.txt', $results['message'] . PHP_EOL, FILE_APPEND);	
 $deProfile = json_decode($results['message'],true);
 $displayName = $deProfile['displayName'];
 
