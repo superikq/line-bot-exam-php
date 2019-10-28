@@ -1,5 +1,5 @@
 <?php
-require "vendor/autoload.php";
+//require "vendor/autoload.php";
 
 $AccessToken = $_POST["AccessToken"];
 $ChannelSecret = $_POST["ChannelSecret"];
@@ -39,17 +39,23 @@ case "flex":
 	break;
 }
 
-$API_URL = 'https://api.line.me/v2/bot/message/push';
 $post_header = array('Content-Type: application/json', 'Authorization: Bearer ' . $AccessToken);
-$json_string = '{ "to": "' . $LineID . '", "messages": [' . $Message . ']}';
+if (strpos($LineID,",")!==false) {
+	$API_URL = 'https://api.line.me/v2/bot/message/multicast';
+	$LineID = '["' . str_replace(',','","',$LineID) . '"]';
+} else {
+	$API_URL = 'https://api.line.me/v2/bot/message/push';
+	$LineID = '"' . $LineID . '"';
+}
+$post_body = '{ "to": ' . $LineID . ', "messages": [' . $Message . ']}';
 
-var_dump($json_string);
+var_dump($post_body);
 
 $ch = curl_init($API_URL);
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, $post_header);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $json_string);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $post_body);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 $result = curl_exec($ch);
 curl_close($ch);
